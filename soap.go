@@ -248,8 +248,8 @@ func (p *process) doRequest(url string) ([]byte, map[string][]string, error) {
 	if p.SoapAction != "" {
 		req.Header.Add("SOAPAction", p.SoapAction)
 	}
-	if len(p.Request.httpHead) > 0 {
-		for name, value := range p.Request.httpHead {
+	if len(p.Request.HttpHead) > 0 {
+		for name, value := range p.Request.HttpHead {
 			req.Header.Add(name, value)
 		}
 	}
