@@ -105,9 +105,22 @@ func (c *Client) Call(m string, p SoapParams) (res *Response, err error) {
 	return c.Do(NewRequest(m, p))
 }
 
+func (c *Client) CallWithHeader(m string, p SoapParams, h map[string]string) (res *Response, err error) {
+	return c.Do(NewRequestWithHeader(m, p, h))
+}
+
 // CallByStruct call's by struct
 func (c *Client) CallByStruct(s RequestStruct) (res *Response, err error) {
 	req, err := NewRequestByStruct(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Do(req)
+}
+
+func (c *Client) CallByStructWithHeader(s RequestWithHeaderStruct) (res *Response, err error) {
+	req, err := NewRequestWithHeaderByStruct(s)
 	if err != nil {
 		return nil, err
 	}

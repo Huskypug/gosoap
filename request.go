@@ -18,6 +18,28 @@ func NewRequest(m string, p SoapParams) *Request {
 	}
 }
 
+func NewRequestWithHeader(m string, p SoapParams, h map[string]string) *Request {
+	return &Request{
+		Method:   m,
+		Params:   p,
+		HttpHead: h,
+	}
+}
+
+// RequestStruct soap request interface
+type RequestWithHeaderStruct interface {
+	SoapBuildRequestWithHeader() *Request
+}
+
+// NewRequestByStruct create a new request using builder
+func NewRequestWithHeaderByStruct(s RequestWithHeaderStruct) (*Request, error) {
+	if s == nil {
+		return nil, fmt.Errorf("'s' cannot be 'nil'")
+	}
+
+	return s.SoapBuildRequestWithHeader(), nil
+}
+
 // RequestStruct soap request interface
 type RequestStruct interface {
 	SoapBuildRequest() *Request
