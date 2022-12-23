@@ -10,7 +10,7 @@ type Response struct {
 	Body     []byte
 	Header   []byte
 	Payload  []byte
-	httpHead map[string][]string
+	HttpHead map[string][]string
 }
 
 // FaultError implements error interface

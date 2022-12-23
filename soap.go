@@ -217,7 +217,7 @@ func (c *Client) Do(req *Request) (res *Response, err error) {
 		Body:     soap.Body.Contents,
 		Header:   soap.Header.Contents,
 		Payload:  p.Payload,
-		httpHead: httpHeader,
+		HttpHead: httpHeader,
 	}
 	if err != nil {
 		return res, ErrorWithPayload{err, p.Payload}
