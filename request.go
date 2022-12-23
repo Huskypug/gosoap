@@ -6,8 +6,9 @@ import (
 
 // Request Soap Request
 type Request struct {
-	Method string
-	Params SoapParams
+	Method   string
+	Params   SoapParams
+	httpHead map[string]string
 }
 
 func NewRequest(m string, p SoapParams) *Request {

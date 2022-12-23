@@ -248,6 +248,11 @@ func (p *process) doRequest(url string) ([]byte, map[string][]string, error) {
 	if p.SoapAction != "" {
 		req.Header.Add("SOAPAction", p.SoapAction)
 	}
+	if len(p.Request.httpHead) > 0 {
+		for name, value := range p.Request.httpHead {
+			req.Header.Add(name, value)
+		}
+	}
 
 	resp, err := p.httpClient().Do(req)
 	if err != nil {
