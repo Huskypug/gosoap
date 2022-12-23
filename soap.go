@@ -185,7 +185,7 @@ func (c *Client) Do(req *Request) (res *Response, err error) {
 		return nil, err
 	}
 
-	b, err := p.doRequest(c.Definitions.Services[0].Ports[0].SoapAddresses[0].Location)
+	b, httpHeader, err := p.doRequest(c.Definitions.Services[0].Ports[0].SoapAddresses[0].Location)
 	if err != nil {
 		return nil, ErrorWithPayload{err, p.Payload}
 	}
@@ -201,9 +201,10 @@ func (c *Client) Do(req *Request) (res *Response, err error) {
 	err = decoder.Decode(&soap)
 
 	res = &Response{
-		Body:    soap.Body.Contents,
-		Header:  soap.Header.Contents,
-		Payload: p.Payload,
+		Body:     soap.Body.Contents,
+		Header:   soap.Header.Contents,
+		Payload:  p.Payload,
+		httpHead: httpHeader,
 	}
 	if err != nil {
 		return res, ErrorWithPayload{err, p.Payload}
@@ -221,16 +222,17 @@ type process struct {
 
 // doRequest makes new request to the server using the c.Method, c.URL and the body.
 // body is enveloped in Do method
-func (p *process) doRequest(url string) ([]byte, error) {
+func (p *process) doRequest(url string) ([]byte, map[string][]string, error) {
+	httpHeader := make(map[string][]string)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(p.Payload))
 	if err != nil {
-		return nil, err
+		return nil, httpHeader, err
 	}
 
 	if p.Client.config != nil && p.Client.config.Dump {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err != nil {
-			return nil, err
+			return nil, httpHeader, err
 		}
 		p.Client.config.Logger.LogRequest(p.Request.Method, dump)
 	}
@@ -249,14 +251,18 @@ func (p *process) doRequest(url string) ([]byte, error) {
 
 	resp, err := p.httpClient().Do(req)
 	if err != nil {
-		return nil, err
+		return nil, httpHeader, err
 	}
 	defer resp.Body.Close()
+
+	for k, v := range resp.Header {
+		httpHeader[k] = v
+	}
 
 	if p.Client.config != nil && p.Client.config.Dump {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err != nil {
-			return nil, err
+			return nil, httpHeader, err
 		}
 		p.Client.config.Logger.LogResponse(p.Request.Method, dump)
 	}
@@ -265,13 +271,17 @@ func (p *process) doRequest(url string) ([]byte, error) {
 		if !(p.Client.config != nil && p.Client.config.Dump) {
 			_, err := io.Copy(ioutil.Discard, resp.Body)
 			if err != nil {
-				return nil, err
+				return nil, httpHeader, err
 			}
 		}
-		return nil, errors.New("unexpected status code: " + resp.Status)
+		return nil, httpHeader, errors.New("unexpected status code: " + resp.Status)
+	}
+	all, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, httpHeader, err
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return all, httpHeader, err
 }
 
 func (p *process) httpClient() *http.Client {

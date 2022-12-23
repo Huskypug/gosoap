@@ -291,17 +291,17 @@ func TestProcess_doRequest(t *testing.T) {
 		},
 	}
 
-	_, err := c.doRequest("")
+	_, _, err := c.doRequest("")
 	if err == nil {
 		t.Errorf("body is empty")
 	}
 
-	_, err = c.doRequest("://teste.")
+	_, _, err = c.doRequest("://teste.")
 	if err == nil {
 		t.Errorf("invalid WSDL")
 	}
 
-	_, err = c.doRequest("https://google.com/non-existent-url")
+	_, _, err = c.doRequest("https://google.com/non-existent-url")
 	if err == nil {
 		t.Errorf("err can't be nil")
 	}
